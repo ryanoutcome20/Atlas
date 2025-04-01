@@ -37,6 +37,8 @@ A more dynamic feature of **Atlas** is the multiple handlers that can be attache
 Here are the available networking modes and their functions. When calling `Listen` on a port, you can specify one of these modes.
 
 ```
+MODE_FAILED - Will be called whenever a checksum failure has occured. Usually caused by cheating players attempting network manipulation.
+
 MODE_NONE - Will never be called. Used when you want to temporarily disable a listener.
 
 MODE_ALL - Will be called for all stages, including MODE_NONE.

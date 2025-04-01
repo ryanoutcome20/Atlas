@@ -10,6 +10,8 @@ util.AddNetworkString( 'atlas-networking' )
 -- Utility Functionality.
 -- =============================================================================
 
+MODE_FAILED = -2
+
 MODE_NONE = -1
 MODE_ALL  = 0
 
@@ -317,9 +319,13 @@ function Atlas:Receive( ENT )
     self:Process( Callbacks, MODE_PARSING, ENT, Data, Index )
 
     if ( Data.Final ) then 
-        local Arguments = self:Unpack( Index )
+        if ( Data.Checksum == Index ) then 
+            local Arguments = self:Unpack( Index )
 
-        self:Process( Callbacks, MODE_DONE, ENT, unpack( Arguments ) )
+            self:Process( Callbacks, MODE_DONE, ENT, unpack( Arguments ) )
+        else
+            self:Process( Callbacks, MODE_FAILED, ENT, Index )
+        end
 
         Index = ''
     end

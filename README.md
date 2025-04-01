@@ -9,6 +9,7 @@ Atlas is a lightweight, modular networking library designed for Garry's Mod, off
   * **Modular Architecture** – Drag-and-drop simplicity for easy integration.
   * **Integration** – Designed to work seamlessly with existing projects without networking collisions, unlike other libraries.
   * **Client and Server** - Fully compatible with both clientside and serverside communication, utilizing two-way communication via port-based listeners.
+  * **Hash Verification** - Provides a fully implemented a SHA-256 hash system to verify the authenticity and wholeness of the provided data.
 
 ## Installation
 
