@@ -8,7 +8,7 @@ Atlas = {
 -- Utility Functionality.
 -- =============================================================================
 
-MODE_NONE = 0
+MODE_NONE = -1
 MODE_ALL  = 0
 
 MODE_PARSING  = 1
@@ -49,6 +49,10 @@ function Atlas:Print( Message, ... )
 end
 
 function Atlas:Call( Function, Meta, ... )
+    if ( not Function ) then 
+        return
+    end
+
     if ( Meta ) then 
         Function( Meta, ... )
     else
@@ -257,7 +261,11 @@ end
 
 function Atlas:Process( Callbacks, Stage, ... )
     for Identifier, Data in pairs( Callbacks ) do 
-        if ( Data.Mode != MODE_NONE and Data.Mode != Stage ) then 
+        if ( Data.Mode == MODE_NONE ) then 
+            continue
+        end
+
+        if ( Data.Mode != MODE_ALL and Data.Mode != Stage ) then 
             continue
         end
 
