@@ -1,5 +1,7 @@
 Atlas = {
-    Ports = { }
+    Ports = { },
+
+    Cache = { }
 }
 
 util.AddNetworkString( 'atlas-networking' )
@@ -7,6 +9,12 @@ util.AddNetworkString( 'atlas-networking' )
 -- =============================================================================
 -- Utility Functionality.
 -- =============================================================================
+
+MODE_NONE = 0
+MODE_ALL  = 0
+
+MODE_PARSING  = 1
+MODE_DONE     = 2
 
 Atlas.Colors = { 
     [ 'Main' ] = Color( 45, 45, 180 ),
@@ -51,16 +59,27 @@ function Atlas:Call( Function, Meta, ... )
 end
 
 -- =============================================================================
--- Listening Functions
+-- Listening Functions.
 -- =============================================================================
 
-function Atlas:Listen( Port, Identifier, Callback, Meta )
+function Atlas:Listen( Port, Identifier, Mode, Callback, Meta )
+    Mode = Mode or MODE_NONE
+    
     self.Ports[ Port ] = self.Ports[ Port ] or { }
 
     self.Ports[ Port ][ Identifier ] = {
         Callback = Callback,
-        Meta     = Meta
+        Meta     = Meta,
+        Mode     = Mode
     }
+end
+
+function Atlas:Close( Port, Identifier )
+    if ( not self.Ports[ Port ] ) then 
+        return
+    end
+
+    self.Ports[ Port ][ Identifier ] = nil
 end
 
 -- =============================================================================
@@ -194,9 +213,12 @@ function Atlas:Read( )
     Data.Final = net.ReadBool( )
 
     Data.Checksum = net.ReadString( )
+    Data.Port     = net.ReadString( )
+
+    return Data
 end
 
-function Atlas:Write( Chunk, Size, Checksum, Index )
+function Atlas:Write( Chunk, Size, Checksum, Index, Port )
     net.WriteUInt( #Chunk, 16 )
     net.WriteData( Chunk, #Chunk )
     
@@ -206,6 +228,7 @@ function Atlas:Write( Chunk, Size, Checksum, Index )
     net.WriteBool( Size == Index )
 
     net.WriteString( Checksum )
+    net.WriteString( Port )
 end
 
 -- =============================================================================
@@ -223,7 +246,7 @@ function Atlas:Send( Port, Target, ... )
         timer.Simple( i, function( )
             net.Start( 'atlas-networking' )
 
-            self:Write( table.concat( Split[ i ] ), Size, Checksum, i )
+                self:Write( table.concat( Split[ i ] ), Size, Checksum, i, Port )
 
             net.Send( Target )
         end )
@@ -241,38 +264,61 @@ function Atlas:Broadcast( Port, ... )
         timer.Simple( i, function( )
             net.Start( 'atlas-networking' )
 
-            self:Write( table.concat( Split[ i ] ), Size, Checksum, i )
+                self:Write( table.concat( Split[ i ] ), Size, Checksum, i, Port )
 
             net.Broadcast( )
         end )
     end
 end
 
--- local str = ''
--- for i = 1, 100 do 
---     str = str .. string.char( math.random( 1, 200 ) )
--- end
+-- =============================================================================
+-- Caller Functions.
+-- =============================================================================
 
--- local tbl = file.Read( 'garrysmod_dir.vpk', 'GAME' )
+function Atlas:Process( Callbacks, Stage, ... )
+    for Identifier, Data in pairs( Callbacks ) do 
+        if ( Data.Mode != MODE_NONE and Data.Mode != Stage ) then 
+            continue
+        end
 
--- tbl = string.rep( tbl, 5 )
-
--- MsgN(#tbl)
--- Atlas:Send( 'Port', Entity(1), tbl )
-
--- local packed = Atlas:Pack( tbl )
-
--- MsgN(#tbl)
--- MsgN(util.CRC(tbl))
-
--- MsgN(#packed)
--- MsgN(util.CRC(packed))
-
--- local unpacked = Atlas:Unpack( packed )
-
--- MsgN(#unpacked)
--- MsgN(util.CRC(unpacked))
+        self:Call( Data.Callback, Data.Meta, Stage, ... )
+    end
+end
 
 -- =============================================================================
 -- Internal Receive Functions.
 -- =============================================================================
+
+function Atlas:Receive( ENT )
+    local Data = self:Read( )
+
+    if ( not Data or not Data.Port ) then 
+        return
+    end
+
+    local Callbacks = self.Ports[ Data.Port ]
+
+    if ( not Callbacks ) then 
+        return
+    end
+
+    self.Cache[ ENT ] = self.Cache[ ENT ] or { }
+
+    local Index = ( self.Cache[ ENT ][ Data.Port ] or '' ) .. Data.Chunk
+
+    self:Process( Callbacks, MODE_PARSING, ENT, Data, Index )
+
+    if ( Data.Final ) then 
+        local Arguments = self:Unpack( Index )
+
+        self:Process( Callbacks, MODE_DONE, ENT, unpack( Arguments ) )
+
+        Index = ''
+    end
+
+    self.Cache[ ENT ][ Data.Port ] = Index
+end
+
+net.Receive( 'atlas-networking', function( Length, ENT )
+    Atlas:Receive( ENT )
+end )
