@@ -18,12 +18,12 @@ Below is a basic "Hello, World!" transmitted from client to server.
 
 **Serverside**:
 ```lua
-Atlas:Send('Example', Entity(1), "Hello, World!")
+Atlas:Send("Example", Entity(1), "Hello, World!")
 ```
 
 **Clientside**:
 ```lua
-Atlas:Listen("Example", "Name", MODE_DONE, function( Stage, Text ) 
+Atlas:Listen("Example", "Name", MODE_DONE, function(Stage, Text) 
     MsgN(Text)
 end)
 ```
@@ -37,7 +37,7 @@ A more dynamic feature of **Atlas** is the multiple handlers that can be attache
 Here are the available networking modes and their functions. When calling `Listen` on a port, you can specify one of these modes.
 
 ```
-MODE_FAILED - Will be called whenever a checksum failure has occured. Usually caused by cheating players attempting network manipulation.
+MODE_FAILED - Will be called whenever a hash/checksum failure has occured. Usually caused by cheating players attempting network manipulation.
 
 MODE_NONE - Will never be called. Used when you want to temporarily disable a listener.
 
@@ -71,14 +71,14 @@ Below is an example of how this could be useful.
 
 **Serverside**:
 ```lua
-Atlas:Send("Banned", Entity(1), BannedPlayer:EntIndex( ), 'Breaking Rules!')
+Atlas:Send("Banned", Entity(1), BannedPlayer:EntIndex(), "Breaking Rules!")
 ```
 
 **Clientside**:
 ```lua
-Atlas:Listen("Banned", "Name", MODE_DONE, function( Stage, Player, Reason ) 
+Atlas:Listen("Banned", "Name", MODE_DONE, function(Stage, Player, Reason) 
     local BannedPlayer = Entity(Player)
-    MsgN(BannedPlayer:Name( ) .. ' was banned for ' .. Reason)
+    MsgN(BannedPlayer:Name() .. " was banned for " .. Reason)
 end)
 ```
 
@@ -87,8 +87,8 @@ end)
 Various things can be done with the `Listen` function. You can listen to various stages of the networking and even provide it with a metatable to call your function with. Below is the declaration of the `Listen` function.
 
 ```lua
-Atlas:Listen( Port, Identifier, Mode, Callback, Meta )
-Atlas:Close( Port, Identifier )
+Atlas:Listen(Port, Identifier, Mode, Callback, Meta)
+Atlas:Close(Port, Identifier)
 ```
 
 Below is an example of why you might want to call it with a metatable.
@@ -123,7 +123,7 @@ Atlas:Send("Large", Entity(1), file.Read("garrysmod_dir.vpk", "GAME"))
 
 **Clientside**:
 ```lua
-Atlas:Listen("Large", "Name", MODE_DONE, function( Stage, Data ) 
+Atlas:Listen("Large", "Name", MODE_DONE, function(Stage, Data) 
     MsgN("Got data!")
     MsgN("Total Size: " .. string.NiceSize(#Data)) -- 513.92 KB at time of upload.
 end)
