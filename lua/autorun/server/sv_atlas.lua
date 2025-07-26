@@ -18,40 +18,6 @@ MODE_ALL  = 0
 MODE_PARSING  = 1
 MODE_DONE     = 2
 
-Atlas.Colors = { 
-    [ 'Main' ] = Color( 45, 45, 180 ),
-
-    [ 'White' ]     = Color( 255, 255, 255 ),
-    [ 'Black' ]     = Color( 0, 0, 0 ),
-    [ 'Gray' ]      = Color( 30, 30, 30 ),
-    [ 'Invisible' ] = Color( 0, 0, 0, 0 ),
-
-    [ 'Light Gray' ] = Color( 80, 80, 80 ),
-    [ 'Dark Gray' ]  = Color( 18, 18, 18 ),
-    [ 'Cyan' ]       = Color( 60, 180, 225 ),
-    [ 'Purple' ]     = Color( 133, 97, 136 ),
-
-    [ 'Red' ]   = Color( 255, 0, 0 ),
-    [ 'Green' ] = Color( 0, 255, 0 ),
-    [ 'Blue' ]  = Color( 0, 0, 255 ) 
-}
-
-function Atlas:PrintEx( Color, Message, ... )
-    Color = Color or self.Colors[ 'Main' ]
-
-    MsgC( 
-        Color, 
-        '[ Atlas ] ', 
-        self.Colors[ 'White' ],
-        string.format( Message, ... ),
-        '\n'
-    )
-end
-
-function Atlas:Print( Message, ... )
-    return self:PrintEx( nil, Message, ... )
-end
-
 function Atlas:Call( Function, Meta, ... )
     if ( not Function ) then 
         return
