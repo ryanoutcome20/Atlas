@@ -285,7 +285,7 @@ function Atlas:Receive( ENT )
     self:Process( Callbacks, MODE_PARSING, ENT, Data, Index )
 
     if ( Data.Final ) then 
-        if ( Data.Checksum == Index ) then 
+        if ( Data.Checksum == util.SHA256(Index) ) then 
             local Arguments = self:Unpack( Index )
 
             self:Process( Callbacks, MODE_DONE, ENT, unpack( Arguments ) )
